@@ -1,171 +1,240 @@
 
 # 📋 Sistema de Avaliação 5S - SENAI Birigui
 
-Este projeto tem como objetivo facilitar e digitalizar o processo de **avaliação 5S** dos ambientes escolares do SENAI de Birigui. A plataforma permite a aplicação de vistorias, geração de relatórios, acompanhamento de melhorias e agendamento de novas avaliações.
+## ✨ Visão Geral
+O Sistema de Avaliação 5S é uma solução digital desenvolvida para modernizar e otimizar o processo de avaliação dos ambientes escolares do SENAI Birigui. A plataforma centraliza todas as etapas do processo 5S, desde o agendamento de vistorias até a geração de relatórios analíticos, promovendo uma cultura de melhoria contínua.
 
 ---
 
-## 🚀 Funcionalidades
+## 🚀 Funcionalidades Principais
 
-- Autenticação com diferentes tipos de usuários:
-  - 👨‍💼 Gestores
-  - 🔍 Inspetores
-  - 👨‍🎓 Alunos (opcional)
+### 👤 Gestão de Usuários e Permissões
+- **Perfis hierárquicos**:
+  - **Administradores**: Acesso completo ao sistema, gestão de usuários e configurações
+  - **Gestores**: Cadastro de ambientes, agendamento de vistorias, análise de indicadores
+  - **Inspetores**: Realização de avaliações 5S com checklist digital
+  - **Alunos** (opcional): Consulta de resultados e relatórios (acesso limitado)
 
-- Cadastro e organização de ambientes por:
-  - Tipo (sala de aula, laboratório de TI, oficina, etc.)
-  - Bloco (Bloco A, Bloco B, Bloco C, ...)
+### 🏢 Gestão de Ambientes
+- Cadastro completo de ambientes com:
+  - Dados básicos (nome, tipo, bloco)
+  - Metadados (dimensões, capacidade, responsável)
+  - Status (ativo/inativo/manutenção)
+  - Fotos e documentos anexados
 
-- Registro de avaliações com base nos 5 pilares do 5S:
-  - Seiri, Seiton, Seisō, Seiketsu e Shitsuke
+### 📝 Sistema de Avaliação
+- **Checklist dinâmico** adaptável a cada tipo de ambiente
+- Avaliação por pilares 5S (Seiri, Seiton, Seisō, Seiketsu, Shitsuke)
+- Pontuação de 0-5 com critérios claros
+- Registro de:
+  - Observações detalhadas
+  - Evidências fotográficas
+  - Pontos de atenção críticos
 
-- Cadastro de perguntas:
-  - Gerais
-  - Por tipo de ambiente
-  - Por bloco
-  - Por ambiente específico
+### 📊 Painéis de Controle
+- **Dashboards interativos** com:
+  - Visão geral por bloco/tipo de ambiente
+  - Evolução histórica dos indicadores
+  - Comparativo entre períodos
+  - Mapa de calor de conformidade
+- **Relatórios inteligentes**:
+  - PDF gerado automaticamente
+  - Gráficos e análises contextualizadas
+  - Planilhas exportáveis para Excel
 
-- Interface de checklist com:
-  - Notas (0 a 5)
-  - Observações
-  - Upload de fotos
-
-- Dashboard interativo com filtros e gráficos
-
-- Exportação de relatórios por ambiente em PDF
-
-- Tela de calendário:
-  - Exibe vistorias passadas
-  - Permite agendamentos futuros
-  - Mostra responsáveis e status
+### 🗓️ Gestão de Vistorias
+- Calendário integrado com:
+  - Agendamento recorrente
+  - Alocação de inspetores
+  - Notificações automáticas
+  - Histórico completo de avaliações
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Arquitetura Técnica
 
-### Backend
-- Python 3.11+
-- Flask
-- Flask-SQLAlchemy
-- Flask-Migrate
-- Flask-Login / JWT
-- ReportLab ou WeasyPrint (geração de PDFs)
+### Backend (API RESTful)
+- **Linguagem**: Python 3.11+
+- **Framework**: Flask
+- **Bibliotecas principais**:
+  - Flask-SQLAlchemy (ORM)
+  - Flask-Migrate (migrations)
+  - Flask-JWT-Extended (autenticação)
+  - WeasyPrint (geração de PDF)
+  - Pillow (processamento de imagens)
 
 ### Frontend Web
-- React.js
-- React Router
-- Context API
-- Chart.js / Recharts
-- FullCalendar
+- **Tecnologias**:
+  - React.js 18+
+  - TypeScript
+  - React Query (gestão de estado)
+  - Material-UI (componentes)
+  - Chart.js (visualização de dados)
+  - FullCalendar (agendamento)
 
-### Banco de Dados
-- PostgreSQL (produção)
-- SQLite (desenvolvimento/local)
+### Infraestrutura
+- **Banco de Dados**:
+  - PostgreSQL (produção)
+  - SQLite (desenvolvimento)
+- **Armazenamento**:
+  - Firebase Storage (imagens e documentos)
+- **Hospedagem**:
+  - Render (backend)
+  - Vercel (frontend)
 
-### Outros
-- Docker (futuro)
-- Firebase Storage ou Cloudinary (para imagens)
-- Vercel / Render / Railway (hospedagem)
+### DevOps
+- Docker (containerização)
+- GitHub Actions (CI/CD)
+- Sentry (monitoramento de erros)
 
 ---
 
-## 📂 Estrutura de Diretórios
+## 📂 Estrutura do Projeto
 
 ```
-/backend
-  ├── models/
-  ├── controllers/
-  ├── routes/
-  ├── templates/
-  ├── static/
-  ├── config.py
-  ├── app.py
-
-/frontend
-  ├── components/
-  ├── pages/
-  ├── services/
-  ├── assets/
-  ├── App.jsx
+sistema-5s/
+├── backend/
+│   ├── app/
+│   │   ├── models/          # Modelos de dados
+│   │   ├── controllers/     # Lógica de negócio
+│   │   ├── services/        # Serviços externos
+│   │   ├── utils/           # Utilitários
+│   │   ├── static/          # Arquivos estáticos
+│   │   └── templates/       # Templates de e-mail/PDF
+│   ├── migrations/          # Migrações de banco
+│   ├── tests/               # Testes automatizados
+│   ├── config.py            # Configurações
+│   └── app.py               # Ponto de entrada
+│
+└── frontend/
+    ├── public/              # Assets públicos
+    ├── src/
+    │   ├── components/      # Componentes reutilizáveis
+    │   ├── contexts/        # Contextos globais
+    │   ├── hooks/           # Custom hooks
+    │   ├── pages/           # Páginas da aplicação
+    │   ├── services/        # Chamadas à API
+    │   ├── styles/          # Estilos globais
+    │   ├── types/           # Tipos TypeScript
+    │   ├── utils/           # Utilitários
+    │   ├── App.tsx          # Componente principal
+    │   └── main.tsx         # Ponto de entrada
+    └── vite.config.ts       # Configuração do Vite
 ```
 
 ---
 
-## 🧱 Modelo de Dados (Resumo)
+## 🧩 Modelo de Dados (Diagrama Conceitual)
 
-### Usuários
-- Inspetores, Gestores e Alunos
-
-### Ambientes
-- Tipo + Bloco + Nome
-
-### Perguntas
-- Classificadas por escopo (geral, tipo, bloco, ambiente)
-
-### Avaliações
-- Pontuação por pilar do 5S
-- Observações e imagens
-
-### Vistorias
-- Datas futuras ou realizadas
-- Vinculadas às avaliações
+```
+[Usuário] 1---* [Avaliação]
+    |           |
+    |           v
+    |       [Resposta] *---1 [Pergunta]
+    |
+    v
+[Agendamento] *---1 [Ambiente]
+                    |
+                    v
+                [Tipo Ambiente]
+```
 
 ---
 
-## 📅 Funcionalidade de Calendário
+## 🚀 Como Executar o Projeto
 
-- Visualização por mês e semana
-- Filtro por ambiente, tipo e bloco
-- Agendamentos e histórico de vistorias
-- Acesso rápido aos relatórios
+### Pré-requisitos
+- Python 3.11+
+- Node.js 18+
+- PostgreSQL 15+
+- Git
 
----
+### Configuração do Ambiente
 
-## 📄 Exportação de Relatórios
-
-- Geração de PDF por ambiente
-- Inclui:
-  - Nota média geral
-  - Notas por pilar
-  - Observações
-  - Sugestões de melhoria
-  - Evidências visuais
-
----
-
-## 📌 Como Executar (em breve)
-
-### Backend
-
+1. **Backend**:
 ```bash
-cd backend
+git clone https://github.com/seu-repositorio/sistema-5s.git
+cd sistema-5s/backend
+
+# Configurar ambiente virtual
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Instalar dependências
 pip install -r requirements.txt
+
+# Configurar variáveis de ambiente
+cp .env.example .env
+# Editar o .env com suas configurações
+
+# Executar migrações
 flask db upgrade
-flask run
+
+# Iniciar servidor
+flask run --port 5000
 ```
 
-### Frontend
-
+2. **Frontend**:
 ```bash
-cd frontend
+cd ../frontend
+
+# Instalar dependências
 npm install
-npm start
+
+# Configurar variáveis
+cp .env.example .env.local
+# Editar o .env.local com suas configurações
+
+# Iniciar aplicação
+npm run dev
 ```
 
+Acesse: http://localhost:3000
+
 ---
 
-## 📌 Roadmap Futuro
+## 📌 Roadmap de Desenvolvimento
 
+### Versão 1.0 (Atual)
+- Módulo básico de avaliações
+- Gestão de ambientes e usuários
+- Relatórios em PDF
+
+### Versão 2.0 (Previsto)
 - [ ] Aplicativo mobile (React Native)
-- [ ] Módulo de notificações e lembretes
-- [ ] Integração com serviços de login institucional
-- [ ] Controle de ações corretivas
+- [ ] Integração com Microsoft 365
+- [ ] Módulo de ações corretivas
+- [ ] API para integração com outros sistemas
+
+### Futuro
+- [ ] Painel de benchmark entre unidades
+- [ ] Machine Learning para sugestões automáticas
+- [ ] IoT (sensores de ambiente)
 
 ---
 
-## 👨‍🏫 Projeto desenvolvido por
-Equipe SENAI Birigui + EasyData360
+## 🤝 Como Contribuir
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/incrivel`)
+3. Commit suas mudanças (`git commit -m 'Adiciona feature incrível'`)
+4. Push para a branch (`git push origin feature/incrivel`)
+5. Abra um Pull Request
 
 ---
+
+## 📄 Licença
+Este projeto está licenciado sob a MIT License - veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+---
+
+## 👨‍💻 Desenvolvido por 
+**EasyData360**  
+[![Website](https://img.shields.io/badge/-Website-blue)](https://www.easydata360.com.br)  
+[![LinkedIn](https://img.shields.io/badge/-LinkedIn-0077B5)](https://www.linkedin.com/company/easydata360)
+
+---
+
+## 🔍 Documentação Adicional
+- [Documentação da API](docs/api.md)
+- [Guia de Estilo](docs/style-guide.md)
+- [FAQ](docs/faq.md)
