@@ -1,0 +1,116 @@
+ Abaixo está o **plano completo e ordenado** para **transformar seu sistema atual (React + TypeScript com mock data)** em um sistema **full-stack com Flask (MVC) + React (JS) + PostgreSQL local**, mantendo boas práticas:
+
+---
+
+## 🚀 ROADMAP COMPLETO DE MIGRAÇÃO DO SISTEMA 5S
+
+### 🔁 ETAPA 1 – Preparação Inicial
+
+1. **Criar repositório novo ou branch de migração.**
+2. **Instalar PostgreSQL localmente** (ou garantir que esteja ativo).
+3. **Criar banco de dados `easy5s_db` e usuário com permissões.**
+4. **Mapear o banco a partir dos dados mock** (ambientes, avaliações, usuários, etc).
+
+---
+
+### ⚙️ ETAPA 2 – Backend Flask (MVC)
+
+#### 📁 Estrutura inicial
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # ou venv\Scripts\activate no Windows
+pip install flask flask_sqlalchemy flask_migrate flask_cors flask_jwt_extended
+```
+
+#### 🛠 Tarefas
+
+1. Criar estrutura MVC com:
+
+   * `models/` → SQLAlchemy
+   * `controllers/` → lógica de negócios
+   * `routes/` → Blueprints
+   * `config.py` com conexão PostgreSQL via `SQLALCHEMY_DATABASE_URI`
+   * `auth/` com login via JWT
+
+2. Criar models:
+
+   * `User`, `Environment`, `Evaluation`, `Question`, `Answer`, `CorrectiveAction`, `EnvironmentEmployee`
+
+3. Criar rotas RESTful:
+
+   * `/api/login`, `/api/users`, `/api/environments`, `/api/evaluations`, `/api/actions`, etc.
+
+4. Habilitar **CORS** e proteger rotas com **JWT**.
+
+5. Rodar migrações iniciais com `Flask-Migrate`:
+
+   ```bash
+   flask db init
+   flask db migrate
+   flask db upgrade
+   ```
+
+6. Popular com dados básicos (mock seed).
+
+---
+
+### 💻 ETAPA 3 – Frontend React (JavaScript)
+
+#### 📁 Estrutura
+
+```bash
+npx create-react-app frontend
+cd frontend
+npm install react-router-dom axios
+```
+
+#### 🔄 Conversão dos arquivos `.tsx` para `.jsx`
+
+1. Renomear todos os arquivos `.tsx` → `.jsx`
+2. Remover tipos TypeScript (`: string`, `React.FC`, interfaces).
+3. Ajustar imports quebrados.
+4. Substituir `mockData` por chamadas à API Flask usando `axios`.
+5. Criar `AuthContext` baseado em token JWT.
+6. Garantir navegação com `useNavigate`, `Route`, `Navigate`.
+
+#### 🌐 Integração com API Flask
+
+* **Login:** `axios.post('/api/login', { email, password })`
+* **Avaliações:** `axios.get('/api/evaluations')`, `post`, `put`, `delete`
+* **Ambientes, Ações, Funcionários:** idem.
+
+---
+
+### 📁 ETAPA 4 – Funcionalidades Críticas
+
+| Módulo           | Backend                      | Frontend                       |
+| ---------------- | ---------------------------- | ------------------------------ |
+| Autenticação     | JWT                          | Context + LocalStorage         |
+| Avaliações       | CRUD + score + PDF (futuro)  | Formulário multistep + envio   |
+| Ações Corretivas | Upload de imagem + status    | Upload via `FormData`          |
+| Ambientes        | CRUD + filtro por bloco/tipo | Filtro local + formulário      |
+| Dashboard        | Agregações SQL + API         | Gráficos via mock inicialmente |
+| Uploads          | `Flask-Uploads` (ou base64)  | Componente de upload           |
+
+---
+
+### 🧪 ETAPA 5 – Testes Locais
+
+1. Verificar comunicação frontend-backend.
+2. Testar login e rotas protegidas.
+3. Testar criação e visualização de avaliações e ações corretivas.
+4. Validar upload de imagem e filtros.
+
+---
+
+### 📄 ETAPA 6 – Extras Futuros
+
+* Exportação de relatórios em **PDF**.
+* **Dockerização** do projeto.
+* Integração com **serviços externos** (Firebase, S3, etc).
+* Painel de **admin com métricas** reais.
+
+---
+
