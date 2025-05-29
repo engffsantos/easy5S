@@ -29,7 +29,7 @@ const Environments = () => {
 
     const fetchEnvironments = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/environments', {
+        const response = await axios.get('http://localhost:5000/api/environments/', {
           headers: {
             Authorization: `Bearer ${token}`
           }

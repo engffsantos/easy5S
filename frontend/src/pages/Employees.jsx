@@ -44,9 +44,9 @@ const Employees = () => {
         const headers = { Authorization: `Bearer ${token}` };
 
         const [empRes, envRes, envEmpRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/employees', { headers }),
-          axios.get('http://localhost:5000/api/environments', { headers }),
-          axios.get('http://localhost:5000/api/environment_employees', { headers }),
+          axios.get('http://localhost:5000/api/employees/', { headers }),
+          axios.get('http://localhost:5000/api/environments/', { headers }),
+          axios.get('http://localhost:5000/api/environment_employees/', { headers }),
         ]);
 
         setEmployees(empRes.data);

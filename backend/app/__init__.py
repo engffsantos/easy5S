@@ -19,7 +19,10 @@ def create_app():
     jwt.init_app(app)
 
     # CORS configurado para permitir origem do frontend
-    CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
+    #CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
+    from flask_cors import CORS
+
+    CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
 
     # Manipuladores para evitar redirects em erros de autenticação (CORS-safe)
     @jwt.unauthorized_loader
@@ -56,6 +59,12 @@ def create_app():
 
     from app.routes.environment_employees import environment_employees_bp
     app.register_blueprint(environment_employees_bp)
+
+    from app.routes.employees import employees_bp
+    app.register_blueprint(employees_bp)
+
+    from app.routes.actions import actions_bp
+    app.register_blueprint(actions_bp)
 
     @app.route('/')
     def index():
