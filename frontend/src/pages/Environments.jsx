@@ -21,41 +21,58 @@ const Environments = () => {
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [editingEnvironment, setEditingEnvironment] = useState(null);
   const [environments, setEnvironments] = useState([]);
+  const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     const currentUser = JSON.parse(localStorage.getItem('user'));
     setUser(currentUser);
 
-    const fetchEnvironments = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/environments/', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        setEnvironments(response.data);
+        const headers = { Authorization: `Bearer ${token}` };
+
+        const [envRes, empRes] = await Promise.all([
+          axios.get('http://localhost:5000/api/environments/', { headers }),
+          axios.get('http://localhost:5000/api/employees/', { headers })
+        ]);
+
+        setEnvironments(envRes.data);
+        const responsibleEmployees = empRes.data.filter(emp => emp.role === 'responsible');
+        setEmployees(responsibleEmployees);
       } catch (error) {
-        console.error('Erro ao buscar ambientes:', error);
+        console.error('Erro ao buscar dados de ambientes ou funcionários:', error);
       }
     };
 
-    fetchEnvironments();
+    fetchData();
   }, []);
 
   const blocks = Array.from(new Set(environments.map(env => env.block))).sort();
 
   const filteredEnvironments = environments.filter(env => {
-    const matchesSearch = env.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      env.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      (env.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (env.description?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     const matchesType = selectedType === 'all' || env.type === selectedType;
     const matchesBlock = selectedBlock === 'all' || env.block === selectedBlock;
     return matchesSearch && matchesType && matchesBlock;
   });
 
-  const handleCreateEnvironment = (environmentData) => {
-    console.log('Criar ambiente (API futura):', environmentData);
-    setIsNewModalOpen(false);
+  const handleCreateEnvironment = async (environmentData) => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const response = await axios.post('http://localhost:5000/api/environments/', environmentData, { headers });
+      console.log('Ambiente criado:', response.data);
+
+      setEnvironments(prev => [...prev, environmentData]);
+    } catch (error) {
+      console.error('Erro ao criar ambiente:', error.response?.data || error.message);
+    } finally {
+      setIsNewModalOpen(false);
+    }
   };
 
   return (
@@ -141,11 +158,7 @@ const Environments = () => {
               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                 environment.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
               }`}>
-                {environment.isActive ? (
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                ) : (
-                  <XCircle className="w-3 h-3 mr-1" />
-                )}
+                {environment.isActive ? <CheckCircle className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
                 {environment.isActive ? 'Ativo' : 'Inativo'}
               </span>
             </div>
@@ -156,9 +169,7 @@ const Environments = () => {
               </span>
             </div>
 
-            <p className="text-sm text-gray-600 mb-4">
-              {environment.description}
-            </p>
+            <p className="text-sm text-gray-600 mb-4">{environment.description}</p>
 
             {user?.role === 'manager' && (
               <div className="flex justify-end space-x-2 mt-4 pt-4 border-t">
@@ -170,11 +181,7 @@ const Environments = () => {
                 >
                   Editar
                 </Button>
-                <Button
-                  variant="danger"
-                  size="sm"
-                  leftIcon={<Trash2 className="h-4 w-4" />}
-                >
+                <Button variant="danger" size="sm" leftIcon={<Trash2 className="h-4 w-4" />}>
                   Excluir
                 </Button>
               </div>
@@ -193,6 +200,8 @@ const Environments = () => {
         isOpen={isNewModalOpen}
         onClose={() => setIsNewModalOpen(false)}
         onSubmit={handleCreateEnvironment}
+        employees={employees}
+        environment={editingEnvironment}
       />
     </div>
   );

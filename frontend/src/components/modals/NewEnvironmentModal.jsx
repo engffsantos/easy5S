@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, UserPlus } from 'lucide-react';
 import Button from '../common/Button';
 import NewEmployeeModal from './NewEmployeeModal';
@@ -11,7 +11,7 @@ const environmentTypes = {
   other: 'Outro',
 };
 
-const NewEnvironmentModal = ({ isOpen, onClose, onSubmit, employees = [] }) => {
+const NewEnvironmentModal = ({ isOpen, onClose, onSubmit, employees = [], environment = null }) => {
   const [formData, setFormData] = useState({
     name: '',
     type: 'classroom',
@@ -22,16 +22,30 @@ const NewEnvironmentModal = ({ isOpen, onClose, onSubmit, employees = [] }) => {
 
   const [isNewEmployeeModalOpen, setIsNewEmployeeModalOpen] = useState(false);
 
+  useEffect(() => {
+    if (environment) {
+      setFormData({
+        name: environment.name || '',
+        type: environment.type || 'classroom',
+        block: environment.block || '',
+        description: environment.description || '',
+        responsibleIds: environment.responsibleIds || [],
+      });
+    } else {
+      setFormData({
+        name: '',
+        type: 'classroom',
+        block: '',
+        description: '',
+        responsibleIds: [],
+      });
+    }
+  }, [environment, isOpen]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(formData);
-    setFormData({
-      name: '',
-      type: 'classroom',
-      block: '',
-      description: '',
-      responsibleIds: [],
-    });
+    onClose();
   };
 
   const handleNewEmployee = (employee) => {
@@ -56,7 +70,9 @@ const NewEnvironmentModal = ({ isOpen, onClose, onSubmit, employees = [] }) => {
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75" onClick={onClose} />
         <div className="bg-white rounded-lg shadow-xl w-full max-w-lg z-50 relative p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Novo Ambiente</h3>
+            <h3 className="text-lg font-semibold">
+              {environment ? 'Editar Ambiente' : 'Novo Ambiente'}
+            </h3>
             <button onClick={onClose}>
               <X className="w-5 h-5 text-gray-500" />
             </button>
@@ -157,7 +173,7 @@ const NewEnvironmentModal = ({ isOpen, onClose, onSubmit, employees = [] }) => {
             <div className="flex justify-end gap-2 pt-4">
               <Button variant="outline" onClick={onClose}>Cancelar</Button>
               <Button type="submit" variant="primary" disabled={formData.responsibleIds.length === 0}>
-                Criar Ambiente
+                {environment ? 'Salvar Alterações' : 'Criar Ambiente'}
               </Button>
             </div>
           </form>

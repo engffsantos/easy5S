@@ -6,6 +6,8 @@ const EditEmployeeModal = ({ isOpen, onClose, onSubmit, employee }) => {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
+    password: '',
+    confirmPassword: '',
     role: 'responsible',
   });
 
@@ -14,22 +16,41 @@ const EditEmployeeModal = ({ isOpen, onClose, onSubmit, employee }) => {
       setFormData({
         fullName: employee.fullName || '',
         email: employee.email || '',
+        password: '',
+        confirmPassword: '',
         role: employee.role || 'responsible',
+      });
+    } else {
+      setFormData({
+        fullName: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        role: 'responsible',
       });
     }
   }, [employee]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({
+
+    if (!employee && formData.password !== formData.confirmPassword) {
+      alert('As senhas não coincidem.');
+      return;
+    }
+
+    const payload = {
       id: employee?.id,
-      ...formData,
-    });
-    setFormData({
-      fullName: '',
-      email: '',
-      role: 'responsible',
-    });
+      fullName: formData.fullName,
+      email: formData.email,
+      role: formData.role,
+    };
+
+    if (!employee) {
+      payload.password = formData.password;
+    }
+
+    onSubmit(payload);
   };
 
   if (!isOpen) return null;
@@ -74,6 +95,34 @@ const EditEmployeeModal = ({ isOpen, onClose, onSubmit, employee }) => {
                     required
                   />
                 </div>
+
+                {!employee && (
+                  <>
+                    <div>
+                      <label htmlFor="password" className="form-label">Senha</label>
+                      <input
+                        type="password"
+                        id="password"
+                        className="form-input"
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="confirmPassword" className="form-label">Confirmar Senha</label>
+                      <input
+                        type="password"
+                        id="confirmPassword"
+                        className="form-input"
+                        value={formData.confirmPassword}
+                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </>
+                )}
 
                 <div>
                   <label htmlFor="role" className="form-label">Função</label>

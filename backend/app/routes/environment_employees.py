@@ -29,3 +29,22 @@ def get_environment_employees():
         for e in env_emps
     ]
     return jsonify(result), 200
+@environment_employees_bp.route('/', methods=['POST'])
+@cross_origin(origin='http://localhost:3000', supports_credentials=True)
+@jwt_required()
+def create_environment_employees():
+    data = request.get_json()
+
+    # Validação básica
+    environment_id = data.get('environmentId')
+    employee_ids = data.get('employeeIds', [])
+
+    if not environment_id or not isinstance(employee_ids, list):
+        return jsonify({'error': 'Dados inválidos'}), 400
+
+    for emp_id in employee_ids:
+        new_relation = EnvironmentEmployee(environment_id=environment_id, employee_id=emp_id)
+        db.session.add(new_relation)
+
+    db.session.commit()
+    return jsonify({'message': 'Relacionamentos criados com sucesso'}), 201

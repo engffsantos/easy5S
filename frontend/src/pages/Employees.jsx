@@ -1,68 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, Search, Edit, Trash2, Mail, UserCircle } from 'lucide-react';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import EditEmployeeModal from '../components/modals/EditEmployeeModal';
+import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
-const roleLabels = {
-  manager: 'Gerente',
-  inspector: 'Inspetor',
-  student: 'Aluno',
-  responsible: 'Responsável',
-};
-
-const roleColors = {
-  manager: 'bg-primary-100 text-primary-800',
-  inspector: 'bg-secondary-100 text-secondary-800',
-  student: 'bg-accent-100 text-accent-800',
-  responsible: 'bg-gray-100 text-gray-800',
-};
-
 const Employees = () => {
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();
   const [employees, setEmployees] = useState([]);
-  const [environments, setEnvironments] = useState([]);
   const [employeeEnvs, setEmployeeEnvs] = useState([]);
+  const [environments, setEnvironments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEnvironment, setSelectedEnvironment] = useState('all');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const currentUser = JSON.parse(localStorage.getItem('user'));
-    setUser(currentUser);
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = { headers: { Authorization: `Bearer ${token}` } };
 
-    if (!token) {
-      console.warn('Token não encontrado. Usuário não autenticado.');
-      return;
+      const [empRes, envRes, empEnvRes] = await Promise.all([
+        axios.get('http://localhost:5000/api/employees/', config),
+        axios.get('http://localhost:5000/api/environments/', config),
+        axios.get('http://localhost:5000/api/environment_employees/', config)
+      ]);
+
+      setEmployees(empRes.data);
+      setEnvironments(envRes.data);
+      setEmployeeEnvs(empEnvRes.data);
+    } catch (err) {
+      console.error('Erro ao buscar dados:', err);
     }
+  };
 
-    const fetchData = async () => {
-      try {
-        const headers = { Authorization: `Bearer ${token}` };
-
-        const [empRes, envRes, envEmpRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/employees/', { headers }),
-          axios.get('http://localhost:5000/api/environments/', { headers }),
-          axios.get('http://localhost:5000/api/environment_employees/', { headers }),
-        ]);
-
-        setEmployees(empRes.data);
-        setEnvironments(envRes.data);
-        setEmployeeEnvs(envEmpRes.data);
-      } catch (error) {
-        console.error('Erro ao buscar dados:', error);
-      }
-    };
-
+  useEffect(() => {
     fetchData();
   }, []);
 
   const filteredEmployees = employees.filter(emp => {
-    const matchesSearch = emp.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      (emp.fullName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (emp.email?.toLowerCase() || '').includes(searchTerm.toLowerCase());
 
     const matchesEnv = selectedEnvironment === 'all' ||
       employeeEnvs.some(ee => ee.employeeId === emp.id && ee.environmentId === selectedEnvironment);
@@ -70,20 +50,60 @@ const Employees = () => {
     return matchesSearch && matchesEnv;
   });
 
-  const getEnvironmentsForEmployee = (id) =>
-    employeeEnvs
-      .filter(ee => ee.employeeId === id)
-      .map(ee => environments.find(env => env.id === ee.environmentId))
-      .filter(Boolean);
-
-  const handleSubmitEmployee = (data) => {
-    console.log('Salvar funcionário (API futura):', data);
-    setIsEditModalOpen(false);
-    setEditingEmployee(null);
+  const handleEditEmployee = (employee = null) => {
+    setEditingEmployee(employee);
+    setIsEditModalOpen(true);
   };
 
-  const handleDeleteEmployee = (id) => {
-    console.log('Excluir funcionário (API futura):', id);
+  const handleDeleteEmployee = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.delete(`http://localhost:5000/api/employees/${id}`, config);
+      fetchData();
+    } catch (err) {
+      console.error('Erro ao excluir funcionário:', err);
+    }
+  };
+
+  const handleSubmitEmployee = async (data) => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+
+      if (data.id) {
+        await axios.put(`http://localhost:5000/api/employees/${data.id}`, data, config);
+      } else {
+        await axios.post('http://localhost:5000/api/employees/', data, config);
+      }
+
+      console.log('Funcionário salvo:', data);
+      setIsEditModalOpen(false);
+      setEditingEmployee(null);
+      fetchData();
+    } catch (error) {
+      console.error('Erro ao salvar funcionário:', error.response?.data || error.message);
+    }
+  };
+
+  const getRoleLabel = (role) => {
+    const roles = {
+      manager: 'Gerente',
+      inspector: 'Inspetor',
+      student: 'Aluno',
+      responsible: 'Responsável',
+    };
+    return roles[role] || role;
+  };
+
+  const getRoleBadgeColor = (role) => {
+    const colors = {
+      manager: 'bg-primary-100 text-primary-800',
+      inspector: 'bg-secondary-100 text-secondary-800',
+      student: 'bg-accent-100 text-accent-800',
+      responsible: 'bg-gray-100 text-gray-800',
+    };
+    return colors[role] || 'bg-gray-100 text-gray-800';
   };
 
   return (
@@ -100,7 +120,7 @@ const Employees = () => {
           <Button
             variant="primary"
             leftIcon={<Plus className="h-4 w-4" />}
-            onClick={() => setIsEditModalOpen(true)}
+            onClick={() => handleEditEmployee()}
           >
             Novo Funcionário
           </Button>
@@ -144,13 +164,19 @@ const Employees = () => {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredEmployees.map(emp => {
-          const empEnvs = getEnvironmentsForEmployee(emp.id);
+        {filteredEmployees.map((emp) => {
+          const envs = employeeEnvs
+            .filter(ee => ee.employeeId === emp.id)
+            .map(ee => environments.find(env => env.id === ee.environmentId))
+            .filter(Boolean);
+
           return (
             <Card key={emp.id} className="hover:shadow-elevated transition-shadow">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start space-x-3">
-                  <UserCircle className="h-10 w-10 text-gray-400" />
+                  <div className="flex-shrink-0">
+                    <UserCircle className="h-10 w-10 text-gray-400" />
+                  </div>
                   <div>
                     <h3 className="font-semibold text-lg">{emp.fullName}</h3>
                     <div className="flex items-center text-gray-500 text-sm mt-1">
@@ -162,25 +188,20 @@ const Employees = () => {
               </div>
 
               <div className="mb-4">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleColors[emp.role]}`}>
-                  {roleLabels[emp.role]}
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(emp.role)}`}>
+                  {getRoleLabel(emp.role)}
                 </span>
               </div>
 
               <div className="mb-4">
                 <h4 className="text-sm font-medium text-gray-700 mb-2">Ambientes Responsável:</h4>
                 <div className="flex flex-wrap gap-2">
-                  {empEnvs.length > 0 ? empEnvs.map(env => (
-                    <span
-                      key={env.id}
-                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
-                    >
+                  {envs.length > 0 ? envs.map(env => (
+                    <span key={env.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                       {env.name}
                     </span>
                   )) : (
-                    <span className="text-sm text-gray-500">
-                      Nenhum ambiente associado
-                    </span>
+                    <span className="text-sm text-gray-500">Nenhum ambiente associado</span>
                   )}
                 </div>
               </div>
@@ -191,10 +212,7 @@ const Employees = () => {
                     variant="outline"
                     size="sm"
                     leftIcon={<Edit className="h-4 w-4" />}
-                    onClick={() => {
-                      setEditingEmployee(emp);
-                      setIsEditModalOpen(true);
-                    }}
+                    onClick={() => handleEditEmployee(emp)}
                   >
                     Editar
                   </Button>

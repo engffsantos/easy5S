@@ -17,9 +17,14 @@ const Login = () => {
 
     try {
       const response = await axios.post('http://localhost:5000/api/login', { email, password });
+
       const { access_token, user } = response.data;
+
+      // Salva no localStorage
       localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(user));
+
+      // Redireciona para a dashboard
       navigate('/dashboard');
     } catch (err) {
       setError('Email ou senha inválidos');

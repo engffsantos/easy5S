@@ -1,13 +1,15 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { ArrowUp, ArrowDown, Calendar, Clipboard } from 'lucide-react';
 import Card from '../components/common/Card';
 import PillarChart from '../components/charts/PillarChart';
 import EnvironmentScoreChart from '../components/charts/EnvironmentScoreChart';
 import Button from '../components/common/Button';
+import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 const Dashboard = () => {
+  const { user } = useAuth();
   const [stats, setStats] = useState({
     totalEnvironments: 0,
     totalEvaluations: 0,
@@ -17,29 +19,16 @@ const Dashboard = () => {
     pillarScores: [],
     latestEnvironment: null
   });
-  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const currentUser = JSON.parse(localStorage.getItem('user'));
-    setUser(currentUser);
 
     const fetchData = async () => {
-      if (!token) {
-        console.warn('Token JWT não encontrado.');
-        return;
-      }
-
       try {
-        const envResponse = await axios.get('http://localhost:5000/api/environments', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const headers = { Authorization: `Bearer ${token}` };
+        const envRes = await axios.get('http://localhost:5000/api/environments/', { headers });
+        const environments = envRes.data;
 
-        const environments = envResponse.data;
-
-        // Simulação de avaliações
         const mockEvaluations = environments.map((env, i) => ({
           id: `${env.id}-eval`,
           environmentId: env.id,
@@ -107,20 +96,10 @@ const Dashboard = () => {
         {user?.role !== 'student' && (
           <div className="flex space-x-3">
             <Link to="/evaluations/new">
-              <Button
-                variant="primary"
-                leftIcon={<Clipboard className="h-4 w-4" />}
-              >
-                Nova Avaliação
-              </Button>
+              <Button variant="primary" leftIcon={<Clipboard className="h-4 w-4" />}>Nova Avaliação</Button>
             </Link>
             <Link to="/calendar">
-              <Button
-                variant="outline"
-                leftIcon={<Calendar className="h-4 w-4" />}
-              >
-                Agendar Vistoria
-              </Button>
+              <Button variant="outline" leftIcon={<Calendar className="h-4 w-4" />}>Agendar Vistoria</Button>
             </Link>
           </div>
         )}
@@ -178,7 +157,37 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Os gráficos e análises adicionais podem ser adicionados aqui */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <Card title="Última Avaliação por Pilar" className="lg:col-span-1">
+          {stats.latestEnvironment && (
+            <div className="mb-3 text-sm text-gray-500">
+              Ambiente: <span className="font-medium text-gray-700">{stats.latestEnvironment}</span>
+            </div>
+          )}
+
+          {stats.pillarScores.length > 0 ? (
+            <PillarChart scores={stats.pillarScores} height={280} />
+          ) : (
+            <div className="h-60 flex items-center justify-center text-gray-500">
+              Nenhuma avaliação encontrada
+            </div>
+          )}
+        </Card>
+
+        <Card title="Pontuação por Ambiente" className="lg:col-span-2">
+          <div className="mb-4 text-sm text-gray-500">
+            Comparativo de notas médias entre os ambientes avaliados
+          </div>
+
+          {stats.environmentScores.length > 0 ? (
+            <EnvironmentScoreChart environments={stats.environmentScores.slice(0, 6)} height={260} />
+          ) : (
+            <div className="h-60 flex items-center justify-center text-gray-500">
+              Nenhum ambiente avaliado
+            </div>
+          )}
+        </Card>
+      </div>
     </div>
   );
 };

@@ -12,7 +12,9 @@ def authenticate_user(email, password):
         return jsonify({"msg": "Usuário não encontrado."}), 404
 
     # Para produção, use check_password_hash(user.password, password)
-    if user.password != password:
+    from werkzeug.security import check_password_hash
+
+    if not check_password_hash(user.password, password):
         return jsonify({"msg": "Senha incorreta."}), 401
 
     access_token = create_access_token(identity=user.id)
